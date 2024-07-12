@@ -1,0 +1,49 @@
+version: '3.8'
+
+volumes:
+  mysql_data:
+
+services:
+  database:
+    image: mysql:latest
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-broker}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-broker}
+      MYSQL_USER: ${MYSQL_USER:-broker}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-broker}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - db-net
+
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: app
+    restart: always
+    command: bash -c "
+                python manage.py migrate &&
+                python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - database
+    environment:
+      NAME: ${NAME:-broker}
+      MYSQL_USER: ${MYSQL_USER:-broker}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-broker}
+      HOST: database
+      PORT: ${PORT:-3306}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/:/app/src
+    networks:
+      - db-net
+
+networks:
+  db-net:
+    driver: bridge
