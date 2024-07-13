@@ -11,7 +11,6 @@ RUN apt-get update \
 
 RUN python -m pip install -U --force-reinstall pip
 ENV DJANGO_SETTINGS_MODULE=src.settings
-VOLUME /src
 COPY /src /src
 WORKDIR /src
 RUN pip3 install -r requirements.txt

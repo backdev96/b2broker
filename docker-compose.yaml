@@ -1,7 +1,7 @@
 version: '3.8'
 
-volumes:
-  mysql_data:
+# volumes:
+#   mysql_data:
 
 services:
   database:
@@ -15,8 +15,8 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-broker}
       MYSQL_USER: ${MYSQL_USER:-broker}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-broker}
-    volumes:
-      - mysql_data:/var/lib/mysql
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
     networks:
       - db-net
 
@@ -27,8 +27,8 @@ services:
     container_name: app
     restart: always
     command: bash -c "
-                python manage.py migrate &&
-                python manage.py runserver 0.0.0.0:8000"
+                python src/manage.py migrate &&
+                python src/manage.py runserver 0.0.0.0:8000"
     depends_on:
       - database
     environment:
@@ -40,7 +40,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app/:/app/src
+      - ./:/src
     networks:
       - db-net
 
