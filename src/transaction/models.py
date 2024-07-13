@@ -5,6 +5,9 @@ from django.core.validators import MinValueValidator
 from .exceptions import InsufficientFundsError
 
 
+MAX_VALUE_TRANSACTION = str(int("9" * 18))
+
+
 class Wallet(models.Model):
     label = models.CharField(max_length=255, verbose_name="label")
     balance = models.DecimalField(
@@ -36,7 +39,7 @@ class Wallet(models.Model):
         # Checks if wallet's balance is higher than transaction amount if negative.
         # Returns 400 http status code.
         obj = self._get_object()
-        if amount > obj.balance:
+        if obj.balance + amount < 0:
             raise InsufficientFundsError(
                 "Your wallet's balance is less than transaction's amount."
             )
