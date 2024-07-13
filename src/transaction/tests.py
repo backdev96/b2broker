@@ -263,6 +263,15 @@ class TransactionViewTest(BaseTestCase):
         response = self.client.get(f"{TRANSACTION_BASE_API_URL}/10000/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    # Delete transaction Unit tests.
+    def test_transaction_delete(self):
+        response = self.client.delete(f"{TRANSACTION_BASE_API_URL}/1/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_transaction_delete_not_found(self):
+        response = self.client.delete(f"{TRANSACTION_BASE_API_URL}/10000/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     # Put Transaction unit tests.
     # def test_transaction_update(self):
     #     data = {
@@ -327,3 +336,21 @@ class WalletViewTest(BaseTestCase):
         response = self.client.get(f"{WALLET_BASE_API_URL}/?sort=-label")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("results")[0].get("label"), "test_wallet_9")
+
+    # Retrieve wallet unit tests.
+    def test_wallet_retrieve(self):
+        response = self.client.get(f"{WALLET_BASE_API_URL}/1/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_wallet_retrieve_not_found(self):
+        response = self.client.get(f"{WALLET_BASE_API_URL}/100000/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Delete wallet Unit tests.
+    def test_wallet_delete(self):
+        response = self.client.delete(f"{WALLET_BASE_API_URL}/1/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_wallet_delete_not_found(self):
+        response = self.client.delete(f"{WALLET_BASE_API_URL}/10000/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
