@@ -1,12 +1,18 @@
+from decimal import Decimal
 from django.db import models, transaction
+from django.core.validators import MinValueValidator
 
 from .exceptions import InsufficientFundsError
 
 
 class Wallet(models.Model):
     label = models.CharField(max_length=255, verbose_name="label")
-    balance = models.PositiveBigIntegerField(
-        verbose_name="balance", default=0
+    balance = models.DecimalField(
+        max_digits=18,
+        decimal_places=0,
+        verbose_name="balance",
+        default=0,
+        validators=[MinValueValidator(Decimal("0"))],
     )  # default=0 for the wallet creation.
 
     class Meta:
@@ -29,6 +35,7 @@ class Wallet(models.Model):
     def withdraw(self, amount):
         # Checks if wallet's balance is higher than transaction amount if negative.
         # Returns 400 http status code.
+        obj = self._get_object()
         if amount > obj.balance:
             raise InsufficientFundsError(
                 "Your wallet's balance is less than transaction's amount."
@@ -46,9 +53,9 @@ class Transaction(models.Model):
         related_name="transactions",
     )
     txid = models.CharField(max_length=255, unique=True, verbose_name="txid")
-    amount = models.BigIntegerField(
-        verbose_name="transaction's amount"
-    )  # BigIntegerField covers 19 digits.
+    amount = models.DecimalField(
+        max_digits=18, decimal_places=0, verbose_name="transaction's amount"
+    )
 
     class Meta:
         verbose_name = "Transaction"

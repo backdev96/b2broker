@@ -10,9 +10,12 @@ from .models import Transaction, Wallet
 from .serializers import (
     TransactionSerializer,
     TransactionCreateSerializer,
+    TransactionSwaggerCreateSerializer,
     WalletCreateSerializer,
     WalletListSerializer,
     WalletRetrieveSerializer,
+    WalletSwaggerCreateSerializer,
+    WalletSwaggerUpdateSerializer,
 )
 
 
@@ -68,7 +71,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Create Transaction",
-        request_body=TransactionSerializer,
+        request_body=TransactionSwaggerCreateSerializer,
         responses={201: TransactionSerializer()},
     )
     def create(self, request, *args, **kwargs):
@@ -156,7 +159,7 @@ class WalletViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Create Wallet",
-        request_body=WalletCreateSerializer,
+        request_body=WalletSwaggerCreateSerializer,
         responses={201: WalletRetrieveSerializer()},
     )
     def create(self, request, *args, **kwargs):
@@ -170,7 +173,7 @@ class WalletViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Update Wallet",
-        request_body=WalletCreateSerializer,
+        request_body=WalletSwaggerUpdateSerializer,
         responses={200: WalletRetrieveSerializer()},
     )
     def update(self, request, *args, **kwargs):
@@ -185,6 +188,7 @@ class WalletViewSet(viewsets.ModelViewSet):
         # return Response(response.data, status=status.HTTP_200_OK, headers=headers)
 
     @swagger_auto_schema(
+        request_body=WalletSwaggerUpdateSerializer,
         operation_summary="Patch Wallet",
     )
     def partial_update(self, request, *args, **kwargs):
