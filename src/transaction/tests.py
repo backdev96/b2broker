@@ -41,6 +41,12 @@ class BaseTestCase(APITestCase):
             )
 
 
+class SwaggerSchemaTest(APITestCase):
+    def test_swagger_schema(self):
+        response = self.client.get("/swagger/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 class TransactionModelTest(APITestCase):
     """Transaction Model unit test."""
 
@@ -60,12 +66,14 @@ class TransactionModelTest(APITestCase):
         self.assertEqual(id_field.unique, True)
         self.assertEqual(id_field.null, False)
         self.assertEqual(amount_field.get_internal_type(), "DecimalField")
-
-
-class SwaggerSchemaTest(APITestCase):
-    def test_swagger_schema(self):
-        response = self.client.get("/swagger/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        wallet = Transaction.objects.create(
+            wallet=Wallet.objects.create(
+                label="Test Wallet for transaction", balance=100
+            ),
+            txid="Test Transaction",
+            amount=100,
+        )
+        self.assertEqual(str(wallet), "Test Transaction")
 
 
 class WalletModelTest(APITestCase):
@@ -90,6 +98,8 @@ class WalletModelTest(APITestCase):
         self.assertEqual(id_field.null, False)
         self.assertEqual(balance_field.get_internal_type(), "DecimalField")
         self.assertIsNotNone(min_value_validator)
+        wallet = Wallet.objects.create(label="Test Wallet", balance=100)
+        self.assertEqual(str(wallet), "Test Wallet: 100")
 
 
 class TransactionViewTest(BaseTestCase):
@@ -322,7 +332,7 @@ class TransactionViewTest(BaseTestCase):
         self.assertEqual(old_transaction_txid, new_transaction_txid)
 
     # Put Transaction unit tests.
-    def teat_transaction_patch(self):
+    def test_transaction_patch(self):
         old_transaction_txid = Transaction.objects.get(id=1).txid
         data = {
             "data": {

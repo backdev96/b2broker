@@ -7,7 +7,7 @@ from decouple import AutoConfig
 BASE_DIR = Path(__file__).resolve().parent.parent
 config = AutoConfig(search_path=BASE_DIR)
 
-SECRET_KEY = config("DJANGO_SECRET")
+SECRET_KEY = "change me"
 
 DEBUG = True
 
@@ -85,24 +85,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "src.wsgi.application"
 
-if config("TEST") == "TEST":
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("NAME"),
+        "USER": os.getenv("MYSQL_USER"),
+        "PASSWORD": os.getenv("MYSQL_PASSWORD"),
+        "HOST": os.getenv("HOST"),
+        "PORT": os.getenv("PORT"),
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("NAME"),
-            "USER": os.getenv("MYSQL_USER"),
-            "PASSWORD": os.getenv("MYSQL_PASSWORD"),
-            "HOST": os.getenv("HOST"),
-            "PORT": os.getenv("PORT"),
-        }
-    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
