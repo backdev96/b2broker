@@ -73,9 +73,9 @@ class TransactionSwaggerCreateSerializer(serializers.Serializer):
 
 
 class DataTransactionUpdateSerializer(serializers.Serializer):
-    type = serializers.CharField(default="Wallet")
+    type = serializers.CharField(default="Transaction")
     id = serializers.IntegerField()
-    attributes = WalletCreateSerializer()
+    attributes = TransactionCreateSerializer()
 
 
 class TransactionSwaggerUpdateSerializer(serializers.Serializer):
@@ -93,9 +93,19 @@ class DataWalletUpdateSerializer(serializers.Serializer):
     attributes = WalletCreateSerializer()
 
 
+class DataWalletUpdateResponseSerializer(serializers.Serializer):
+    type = serializers.CharField(default="Wallet")
+    id = serializers.IntegerField()
+    attributes = WalletRetrieveSerializer()
+
+
 class WalletSwaggerCreateSerializer(serializers.Serializer):
     data = DataWalletSerializer()
 
 
 class WalletSwaggerUpdateSerializer(serializers.Serializer):
     data = DataWalletUpdateSerializer()
+
+
+class WalletSwaggerCreateResponseSerializer(serializers.Serializer):
+    data = DataWalletUpdateResponseSerializer()

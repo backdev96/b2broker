@@ -11,11 +11,13 @@ from .serializers import (
     TransactionSerializer,
     TransactionCreateSerializer,
     TransactionSwaggerCreateSerializer,
+    TransactionSwaggerUpdateSerializer,
     WalletCreateSerializer,
     WalletListSerializer,
     WalletRetrieveSerializer,
     WalletSwaggerCreateSerializer,
     WalletSwaggerUpdateSerializer,
+    WalletSwaggerCreateResponseSerializer,
 )
 
 
@@ -89,7 +91,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Update Transaction",
-        request_body=TransactionSerializer,
+        request_body=TransactionSwaggerUpdateSerializer,
         responses={
             200: TransactionSerializer(),
             400: "Your wallet's balance is less than transaction's amount.",
@@ -109,7 +111,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         operation_summary="Patch Transaction",
-        request_body=TransactionSerializer,
+        request_body=TransactionSwaggerUpdateSerializer,
         responses={
             200: TransactionSerializer(),
             400: "Your wallet's balance is less than transaction's amount.",
@@ -173,7 +175,7 @@ class WalletViewSet(viewsets.ModelViewSet):
     @swagger_auto_schema(
         operation_summary="Create Wallet",
         request_body=WalletSwaggerCreateSerializer,
-        responses={201: WalletRetrieveSerializer()},
+        responses={201: WalletSwaggerCreateResponseSerializer()},
     )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -187,7 +189,7 @@ class WalletViewSet(viewsets.ModelViewSet):
     @swagger_auto_schema(
         operation_summary="Update Wallet",
         request_body=WalletSwaggerUpdateSerializer,
-        responses={200: WalletRetrieveSerializer(), 404: "Not Found"},
+        responses={200: WalletSwaggerCreateResponseSerializer(), 404: "Not Found"},
     )
     def update(self, request, *args, **kwargs):
         return super(WalletViewSet, self).update(request, *args, **kwargs)
@@ -195,7 +197,7 @@ class WalletViewSet(viewsets.ModelViewSet):
     @swagger_auto_schema(
         request_body=WalletSwaggerUpdateSerializer,
         operation_summary="Patch Wallet",
-        responses={200: WalletRetrieveSerializer(), 404: "Not Found"},
+        responses={200: WalletSwaggerCreateResponseSerializer(), 404: "Not Found"},
     )
     def partial_update(self, request, *args, **kwargs):
         return super(WalletViewSet, self).partial_update(request, *args, **kwargs)
