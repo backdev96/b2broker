@@ -5,9 +5,6 @@ from django.core.validators import MinValueValidator
 from .exceptions import InsufficientFundsError
 
 
-MAX_VALUE_TRANSACTION = str(int("9" * 18))
-
-
 class Wallet(models.Model):
     label = models.CharField(max_length=255, verbose_name="label")
     balance = models.DecimalField(

@@ -1,0 +1,7 @@
+[flake8]
+
+show-source = yes
+statistics = yes
+count = yes
+max-line-length = 120
+exclude = src/transaction/migrations/*.py, src/src/test_settings.py

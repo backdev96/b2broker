@@ -62,6 +62,12 @@ class TransactionModelTest(APITestCase):
         self.assertEqual(amount_field.get_internal_type(), "DecimalField")
 
 
+class SwaggerSchemaTest(APITestCase):
+    def test_swagger_schema(self):
+        response = self.client.get("/swagger/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 class WalletModelTest(APITestCase):
     """Wallet Model unit test."""
 
@@ -263,6 +269,110 @@ class TransactionViewTest(BaseTestCase):
         response = self.client.get(f"{TRANSACTION_BASE_API_URL}/10000/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    # Put Transaction unit tests.
+    def test_transaction_put(self):
+        old_transaction_txid = Transaction.objects.get(id=1).txid
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": 1,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "1231234535543",
+                    "wallet": 2,
+                },
+            }
+        }
+        response = self.client.put(f"{TRANSACTION_BASE_API_URL}/1/", data=data)
+        new_transaction_txid = Transaction.objects.get(id=1).txid
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(old_transaction_txid, new_transaction_txid)
+
+    def test_transaction_put_not_found(self):
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": 1,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "1231234535543",
+                    "wallet": 2,
+                },
+            }
+        }
+        response = self.client.put(f"{TRANSACTION_BASE_API_URL}/100000/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_transaction_put_wallet_balance_negative(self):
+        old_transaction_txid = Transaction.objects.get(id=1).txid
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": 1,
+                "attributes": {
+                    "txid": "string22",
+                    "amount": "-1231234535543",
+                    "wallet": 2,
+                },
+            }
+        }
+        response = self.client.put(f"{TRANSACTION_BASE_API_URL}/1/", data=data)
+        new_transaction_txid = Transaction.objects.get(id=1).txid
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(old_transaction_txid, new_transaction_txid)
+
+    # Put Transaction unit tests.
+    def teat_transaction_patch(self):
+        old_transaction_txid = Transaction.objects.get(id=1).txid
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": 1,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "1231234535543",
+                    "wallet": 2,
+                },
+            }
+        }
+        response = self.client.patch(f"{TRANSACTION_BASE_API_URL}/1/", data=data)
+        new_transaction_txid = Transaction.objects.get(id=1).txid
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(old_transaction_txid, new_transaction_txid)
+
+    def test_transaction_patch_not_found(self):
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": 1,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "1231234535543",
+                    "wallet": 2,
+                },
+            }
+        }
+        response = self.client.patch(f"{TRANSACTION_BASE_API_URL}/100000/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_transaction_patch_wallet_balance_negative(self):
+        old_transaction_txid = Transaction.objects.get(id=1).txid
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": 1,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "-1231234535543",
+                    "wallet": 2,
+                },
+            }
+        }
+        response = self.client.patch(f"{TRANSACTION_BASE_API_URL}/1/", data=data)
+        new_transaction_txid = Transaction.objects.get(id=1).txid
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(old_transaction_txid, new_transaction_txid)
+
     # Delete transaction Unit tests.
     def test_transaction_delete(self):
         response = self.client.delete(f"{TRANSACTION_BASE_API_URL}/1/")
@@ -271,23 +381,6 @@ class TransactionViewTest(BaseTestCase):
     def test_transaction_delete_not_found(self):
         response = self.client.delete(f"{TRANSACTION_BASE_API_URL}/10000/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    # Put Transaction unit tests.
-    # def test_transaction_update(self):
-    #     data = {
-    #         "data": {
-    #             "type": "Transaction",
-    #             "id": 1,
-    #             "attributes": {
-    #                 "txid": "string",
-    #                 "amount": "-1231234535543",
-    #                 "wallet": 2
-    #                 }
-    #             }
-    #         }
-    #     response = self.client.put(f"{TRANSACTION_BASE_API_URL}/1/", data=data)
-    #     raise Exception(response.data)
-    # self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class WalletViewTest(BaseTestCase):
@@ -344,6 +437,41 @@ class WalletViewTest(BaseTestCase):
 
     def test_wallet_retrieve_not_found(self):
         response = self.client.get(f"{WALLET_BASE_API_URL}/100000/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Wallet patch unit tests.
+
+    def test_wallet_patch(self):
+        old_label = Wallet.objects.get(id=3).label
+        data = {"data": {"type": "Wallet", "id": 3, "attributes": {"label": "string"}}}
+        response = self.client.put("/api/wallets/3/", data=data)
+        new_label = Wallet.objects.get(id=3).label
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(old_label, new_label)
+
+    def test_wallet_patch_not_found(self):
+        data = {
+            "data": {"type": "Wallet", "id": 100, "attributes": {"label": "string"}}
+        }
+        response = self.client.put("{WALLET_BASE_API_URL}/100/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Wallet put unit tests.
+    def test_wallet_put(self):
+        old_label = Wallet.objects.get(id=4).label
+        data = {
+            "data": {"type": "Wallet", "id": 4, "attributes": {"label": "str222ing"}}
+        }
+        response = self.client.put("/api/wallets/4/", data=data)
+        new_label = Wallet.objects.get(id=3).label
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(old_label, new_label)
+
+    def test_wallet_put_not_found(self):
+        data = {
+            "data": {"type": "Wallet", "id": 100, "attributes": {"label": "str222ing"}}
+        }
+        response = self.client.put("{WALLET_BASE_API_URL}/100/", data=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # Delete wallet Unit tests.
