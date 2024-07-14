@@ -322,7 +322,7 @@ class TransactionViewTest(BaseTestCase):
                 "attributes": {
                     "txid": "string22",
                     "amount": "-1231234535543",
-                    "wallet": 2,
+                    "wallet": 1,
                 },
             }
         }
@@ -330,6 +330,61 @@ class TransactionViewTest(BaseTestCase):
         new_transaction_txid = Transaction.objects.get(id=1).txid
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(old_transaction_txid, new_transaction_txid)
+
+    def test_transaction_patch_different_wallets(self):
+        transaction = Transaction.objects.create(
+            wallet=self.test_wallet,
+            txid="test transaction patch",
+            amount=50,
+        )
+        old_wallet_balance_from = Wallet.objects.get(id=self.test_wallet.id).balance
+        new_wallet_balance_to = Wallet.objects.get(id=self.test_wallet_2.id).balance
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": transaction.id,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "100",
+                    "wallet": self.test_wallet_2.id,
+                },
+            }
+        }
+        response = self.client.patch(
+            f"{TRANSACTION_BASE_API_URL}/{transaction.id}/", data=data
+        )
+        new_wallet_balance_from = Wallet.objects.get(id=self.test_wallet.id).balance
+        new_wallet_balance_to = Wallet.objects.get(id=self.test_wallet_2.id).balance
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(new_wallet_balance_from < old_wallet_balance_from)
+        self.assertTrue(new_wallet_balance_to > new_wallet_balance_from)
+
+    def test_transaction_patch_different_wallets_insufficient_balance(self):
+        transaction = Transaction.objects.create(
+            wallet=self.test_wallet,
+            txid="test transaction patch balance",
+            amount=10000,
+        )
+        _ = Transaction.objects.create(
+            wallet=self.test_wallet,
+            txid="test transaction patch 2",
+            amount=-5000,
+        )
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": transaction.id,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "100",
+                    "wallet": self.test_wallet_2.id,
+                },
+            }
+        }
+        response = self.client.patch(
+            f"{TRANSACTION_BASE_API_URL}/{transaction.id}/", data=data
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     # Put Transaction unit tests.
     def test_transaction_patch(self):
@@ -349,6 +404,61 @@ class TransactionViewTest(BaseTestCase):
         new_transaction_txid = Transaction.objects.get(id=1).txid
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(old_transaction_txid, new_transaction_txid)
+
+    def test_transaction_put_different_wallets(self):
+        transaction = Transaction.objects.create(
+            wallet=self.test_wallet,
+            txid="test transaction diff wallets",
+            amount=50,
+        )
+        old_wallet_balance_from = Wallet.objects.get(id=self.test_wallet.id).balance
+        new_wallet_balance_to = Wallet.objects.get(id=self.test_wallet_2.id).balance
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": transaction.id,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "100",
+                    "wallet": self.test_wallet_2.id,
+                },
+            }
+        }
+        response = self.client.put(
+            f"{TRANSACTION_BASE_API_URL}/{transaction.id}/", data=data
+        )
+        new_wallet_balance_from = Wallet.objects.get(id=self.test_wallet.id).balance
+        new_wallet_balance_to = Wallet.objects.get(id=self.test_wallet_2.id).balance
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(new_wallet_balance_from < old_wallet_balance_from)
+        self.assertTrue(new_wallet_balance_to > new_wallet_balance_from)
+
+    def test_transaction_put_different_wallets_insufficient_balance(self):
+        transaction = Transaction.objects.create(
+            wallet=self.test_wallet,
+            txid="test transaction pozitive",
+            amount=10000,
+        )
+        _ = Transaction.objects.create(
+            wallet=self.test_wallet,
+            txid="test transaction negative",
+            amount=-5000,
+        )
+        data = {
+            "data": {
+                "type": "Transaction",
+                "id": transaction.id,
+                "attributes": {
+                    "txid": "string",
+                    "amount": "100",
+                    "wallet": self.test_wallet_2.id,
+                },
+            }
+        }
+        response = self.client.put(
+            f"{TRANSACTION_BASE_API_URL}/{transaction.id}/", data=data
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_transaction_patch_not_found(self):
         data = {
@@ -374,7 +484,7 @@ class TransactionViewTest(BaseTestCase):
                 "attributes": {
                     "txid": "string",
                     "amount": "-1231234535543",
-                    "wallet": 2,
+                    "wallet": 1,
                 },
             }
         }

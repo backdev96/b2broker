@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from drf_yasg.utils import swagger_serializer_method
+
 from .models import Transaction, Wallet
+from .utils import make_transaction, reverse_transaction
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -20,6 +22,18 @@ class TransactionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ("wallet", "txid", "amount")
         model = Transaction
+
+    def update(self, obj: Transaction, validated_data):
+        # UPDATE database case.
+        amount = validated_data.get("amount")
+        new_wallet = validated_data.get("wallet")
+        if not new_wallet or obj.wallet == new_wallet:
+            amount_difference = amount - obj.amount
+            make_transaction(wallet=obj.wallet, amount=amount_difference)
+        else:
+            reverse_transaction(wallet=obj.wallet, amount=obj.amount)
+            make_transaction(wallet=new_wallet, amount=amount)
+        return super().update(obj, validated_data)
 
 
 class WalletCreateSerializer(serializers.ModelSerializer):

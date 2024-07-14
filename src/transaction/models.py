@@ -3,6 +3,7 @@ from django.db import models, transaction
 from django.core.validators import MinValueValidator
 
 from .exceptions import InsufficientFundsError
+from .utils import make_transaction, reverse_transaction
 
 
 class Wallet(models.Model):
@@ -69,15 +70,10 @@ class Transaction(models.Model):
         return self.txid
 
     def save(self, *args, **kwargs):
-        if self.amount > 0:
-            self.wallet.deposit(self.amount)
-        else:
-            self.wallet.withdraw(self.amount)
+        if not self.pk:  # only for database INSERT.
+            make_transaction(wallet=self.wallet, amount=self.amount)
         super(Transaction, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.amount < 0:
-            self.wallet.deposit(self.amount)
-        else:
-            self.wallet.withdraw(self.amount)
+        reverse_transaction(wallet=self.wallet, amount=self.amount)
         super(Transaction, self).save(*args, **kwargs)

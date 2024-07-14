@@ -1,11 +1,8 @@
 import os
 from pathlib import Path
 
-from decouple import AutoConfig
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-config = AutoConfig(search_path=BASE_DIR)
 
 SECRET_KEY = "change me"
 
