@@ -378,6 +378,37 @@ class TransactionViewTest(BaseTestCase):
         response = self.client.delete(f"{TRANSACTION_BASE_API_URL}/1/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_transaction_delete_negative_amount(self):
+        self.test_wallet_2.balance = 1000
+        self.test_wallet_2.save()
+        transaction_negative = Transaction.objects.create(
+            wallet=self.test_wallet_2, txid="negative transaction", amount=-100
+        )
+        response = self.client.delete(
+            f"{TRANSACTION_BASE_API_URL}/{transaction_negative.id}/"
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_transaction_delete_negative_wallet_balance(self):
+        wallet_old = Wallet.objects.get(id=self.test_wallet_2.id)
+        wallet_old.balance = 0
+        wallet_old.save()
+        transaction_positive = Transaction.objects.create(
+            wallet=wallet_old, txid="positive transaction", amount=100000
+        )
+        transaction_negative = Transaction.objects.create(
+            wallet=wallet_old, txid="negative transaction", amount=-90000
+        )
+        response = self.client.delete(
+            f"{TRANSACTION_BASE_API_URL}/{transaction_positive.id}/"
+        )
+        wallet_new = Wallet.objects.get(id=self.test_wallet_2.id)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            transaction_positive.amount + transaction_negative.amount,
+            wallet_new.balance,
+        )
+
     def test_transaction_delete_not_found(self):
         response = self.client.delete(f"{TRANSACTION_BASE_API_URL}/10000/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -440,7 +471,6 @@ class WalletViewTest(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # Wallet patch unit tests.
-
     def test_wallet_patch(self):
         old_label = Wallet.objects.get(id=3).label
         data = {"data": {"type": "Wallet", "id": 3, "attributes": {"label": "string"}}}
@@ -482,3 +512,9 @@ class WalletViewTest(BaseTestCase):
     def test_wallet_delete_not_found(self):
         response = self.client.delete(f"{WALLET_BASE_API_URL}/10000/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Post wallet Unit test
+    def test_wallet_create(self):
+        data = {"data": {"type": "Wallet", "attributes": {"label": "string"}}}
+        response = self.client.post("/api/wallets/", data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

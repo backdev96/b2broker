@@ -6,7 +6,7 @@ from .exceptions import InsufficientFundsError
 
 
 class Wallet(models.Model):
-    label = models.CharField(max_length=255, verbose_name="label")
+    label = models.CharField(max_length=255, verbose_name="label", db_index=True)
     balance = models.DecimalField(
         max_digits=18,
         decimal_places=0,
@@ -33,9 +33,11 @@ class Wallet(models.Model):
 
     @transaction.atomic()
     def withdraw(self, amount):
-        # Checks if wallet's balance is higher than transaction amount if negative.
-        # Returns 400 http status code.
+        # Checks if wallet's balance is higher than transaction amount.
+        # If negative returns 400 http status code.
         obj = self._get_object()
+        if amount > 0:
+            amount = -amount
         if obj.balance + amount < 0:
             raise InsufficientFundsError(
                 "Your wallet's balance is less than transaction's amount."
@@ -52,7 +54,9 @@ class Transaction(models.Model):
         verbose_name="wallet",
         related_name="transactions",
     )
-    txid = models.CharField(max_length=255, unique=True, verbose_name="txid")
+    txid = models.CharField(
+        max_length=255, unique=True, verbose_name="txid", db_index=True
+    )
     amount = models.DecimalField(
         max_digits=18, decimal_places=0, verbose_name="transaction's amount"
     )
