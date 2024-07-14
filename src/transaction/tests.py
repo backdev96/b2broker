@@ -474,7 +474,7 @@ class WalletViewTest(BaseTestCase):
     def test_wallet_patch(self):
         old_label = Wallet.objects.get(id=3).label
         data = {"data": {"type": "Wallet", "id": 3, "attributes": {"label": "string"}}}
-        response = self.client.put("/api/wallets/3/", data=data)
+        response = self.client.patch("/api/wallets/3/", data=data)
         new_label = Wallet.objects.get(id=3).label
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual(old_label, new_label)
@@ -483,7 +483,7 @@ class WalletViewTest(BaseTestCase):
         data = {
             "data": {"type": "Wallet", "id": 100, "attributes": {"label": "string"}}
         }
-        response = self.client.put("{WALLET_BASE_API_URL}/100/", data=data)
+        response = self.client.patch("{WALLET_BASE_API_URL}/100/", data=data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # Wallet put unit tests.
