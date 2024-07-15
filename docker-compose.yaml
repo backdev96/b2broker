@@ -35,7 +35,7 @@ services:
       NAME: ${NAME:-broker}
       MYSQL_USER: ${MYSQL_USER:-broker}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-broker}
-      HOST: database
+      HOST: ${HOST:-database}
       PORT: ${PORT:-3306}
     ports:
       - "8000:8000"
